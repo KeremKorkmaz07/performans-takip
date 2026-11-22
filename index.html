@@ -12,6 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF (Çok Sayfalı PDF Grafik Raporu İçin) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,38 +72,45 @@
 
     <!-- Üst Bilgi Çubuğu (Header) -->
     <header class="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+        <div class="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
             <!-- Logo ve Uygulama Adı -->
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                    <svg class="w-5 h-5 text-zinc-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                 </div>
                 <div class="min-w-0">
                     <h1 class="text-sm sm:text-lg font-bold tracking-tight text-white leading-tight truncate">Performans Takip</h1>
-                    <span class="block text-[11px] font-medium text-zinc-400 leading-tight truncate">1RM & Gelişim Günlüğü</span>
+                    <span class="block text-[10px] sm:text-[11px] font-medium text-zinc-400 leading-tight truncate">1RM & Gelişim Günlüğü</span>
                 </div>
             </div>
 
-            <!-- Sağ Aksiyonlar: Genel Birim Geçişi (LBS/KG), Yedekle (Export), Geri Yükle (Import), Sıfırla -->
+            <!-- Sağ Aksiyonlar: Genel Birim (LBS/KG), JSON Yedek, PDF Grafik Raporu, Yükle, Sıfırla -->
             <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <button id="unitToggleBtn" onclick="toggleDisplayUnit()" title="Tüm Hareketlerin Birimini Toplu Değiştir (LBS / KG)" class="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-extrabold tracking-wide text-emerald-400 transition active:scale-95">
+                <button id="unitToggleBtn" onclick="toggleDisplayUnit()" title="Tüm Hareketlerin Birimini Toplu Değiştir (LBS / KG)" class="h-9 px-2 sm:px-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-extrabold tracking-wide text-emerald-400 transition active:scale-95">
                     LBS
                 </button>
-                <button onclick="exportData()" title="Verileri JSON Olarak İndir" class="p-2 sm:p-2.5 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <button onclick="exportData()" title="Verileri JSON Olarak Dışa Aktar" class="h-9 px-2 sm:px-2.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition active:scale-95 flex flex-col items-center justify-center leading-none gap-0.5">
+                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
+                    <span class="text-[9px] font-bold tracking-tight">JSON</span>
                 </button>
-                <label title="JSON Yedeği Yükle" class="p-2 sm:p-2.5 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition active:scale-95 cursor-pointer">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <button id="exportPdfBtn" onclick="exportChartsPDF()" title="Tüm Program, Gün ve Hareketlerin Grafiklerini PDF Olarak Kaydet" class="h-9 px-2 sm:px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition active:scale-95 flex flex-col items-center justify-center leading-none gap-0.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                    </svg>
+                    <span class="text-[9px] font-extrabold tracking-tight">PDF</span>
+                </button>
+                <label title="JSON Yedeği Yükle" class="h-9 w-8 sm:w-9 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition active:scale-95 cursor-pointer flex items-center justify-center">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
                     <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
                 </label>
-                <button onclick="confirmResetData()" title="Örnek Verilere Sıfırla" class="p-2 sm:p-2.5 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <button onclick="confirmResetData()" title="Örnek Verilere Sıfırla" class="h-9 w-8 sm:w-9 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition active:scale-95 flex items-center justify-center">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
                 </button>
@@ -187,7 +196,7 @@
 
     <!-- 1. Hızlı Ağırlık & Tekrar Güncelleme Modalı -->
     <div id="quickEditModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-sm max-h-[92vh] overflow-y-auto p-6 shadow-2xl animate-slide-up">
             <div class="flex items-start justify-between mb-4">
                 <div>
                     <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Yeni Set Kaydı</span>
@@ -198,7 +207,7 @@
                 </button>
             </div>
 
-            <form onsubmit="saveQuickEdit(event)" class="flex flex-col gap-4">
+            <form onsubmit="saveQuickEdit(event)" class="flex flex-col gap-3.5">
                 <!-- Ağırlık Girişi -->
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
@@ -213,7 +222,7 @@
                         <input type="number" id="editWeightInput" step="any" min="0" required oninput="onQuickWeightInput()" class="min-w-0 flex-1 w-full h-12 bg-zinc-950 border border-zinc-700 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-500">
                         <button type="button" onclick="adjustInput('editWeightInput', 5)" class="shrink-0 w-14 h-12 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-base font-bold text-emerald-400 border border-zinc-700/80 flex items-center justify-center transition">+5</button>
                     </div>
-                    <div id="quickConversionHint" class="text-[11px] text-zinc-400 mt-1.5 text-right font-medium">
+                    <div id="quickConversionHint" class="text-[11px] text-zinc-400 mt-1 text-right font-medium">
                         Kayıt değeri: 225 lbs
                     </div>
                 </div>
@@ -228,13 +237,21 @@
                     </div>
                 </div>
 
+                <!-- Opsiyonel Not Girişi -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="editNoteInput" class="text-xs font-medium text-zinc-400">Not <span class="text-zinc-500">(Opsiyonel)</span></label>
+                    </div>
+                    <input type="text" id="editNoteInput" maxlength="160" placeholder="Örn: Bugün yorgundum, uyku azdı..." class="w-full h-10 px-3.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none transition">
+                </div>
+
                 <!-- Canlı Tahmini 1RM Önizlemesi -->
                 <div class="bg-zinc-950/80 border border-zinc-800/80 rounded-2xl p-3 flex items-center justify-between">
                     <span class="text-xs text-zinc-400">Hesaplanan Tahmini 1RM:</span>
                     <span id="live1RMValue" class="text-base font-extrabold text-emerald-400">285 lbs</span>
                 </div>
 
-                <div class="flex items-center gap-2.5 mt-2">
+                <div class="flex items-center gap-2.5 mt-1">
                     <button type="button" onclick="closeModal('quickEditModal')" class="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-semibold text-sm transition">İptal</button>
                     <button type="submit" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition active:scale-95">Kaydet</button>
                 </div>
@@ -306,14 +323,14 @@
 
     <!-- 3. Yeni Egzersiz Ekleme Modalı -->
     <div id="addExerciseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-slide-up">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-sm max-h-[92vh] overflow-y-auto p-6 shadow-2xl animate-slide-up">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-bold text-white">Yeni Egzersiz Ekle</h3>
                 <button onclick="closeModal('addExerciseModal')" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <form onsubmit="handleAddExercise(event)" class="flex flex-col gap-4">
+            <form onsubmit="handleAddExercise(event)" class="flex flex-col gap-3.5">
                 <div>
                     <label class="block text-xs font-medium text-zinc-400 mb-1.5">Egzersiz Adı</label>
                     <input type="text" id="newExName" placeholder="Örn: Overhead Press" required class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:outline-none focus:border-emerald-500">
@@ -335,7 +352,11 @@
                         <input type="number" id="newExReps" step="1" min="1" value="10" required class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm font-semibold focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
-                <div class="flex items-center gap-2.5 mt-2">
+                <div>
+                    <label for="newExNote" class="block text-xs font-medium text-zinc-400 mb-1">Not <span class="text-zinc-500">(Opsiyonel)</span></label>
+                    <input type="text" id="newExNote" maxlength="160" placeholder="Örn: İlk deneme, ısınma sonrası..." class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white text-xs sm:text-sm placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center gap-2.5 mt-1">
                     <button type="button" onclick="closeModal('addExerciseModal')" class="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-semibold text-sm transition">İptal</button>
                     <button type="submit" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">Ekle</button>
                 </div>
@@ -396,7 +417,7 @@
         // =========================================================================
         // İLERİ DÖNÜK VERİ ŞEMASI VE GERİYE DÖNÜK UYUMLULUK (MIGRATION)
         // =========================================================================
-        const CURRENT_SCHEMA_VERSION = 3;
+        const CURRENT_SCHEMA_VERSION = 4;
         const STORAGE_KEY = 'performans_takip_v2_lbs';
         const LEGACY_STORAGE_KEYS = ['performans_takip_v1', 'performans_takip'];
         const BACKUP_STORAGE_KEY = 'performans_takip_auto_backup';
@@ -407,6 +428,7 @@
         let currentChartExerciseId = null;
         let tabModalMode = 'add';
         let chartInstance = null;
+        let isExportingPdf = false;
 
         // Kayıpsız dönüşüm için modal içi tam hassasiyetli durum değişkenleri
         let quickInputUnit = 'lbs';
@@ -425,9 +447,6 @@
             return (parseFloat(lbs) || 0) / KG_TO_LBS;
         }
 
-        // Ekranda temiz gösterim:
-        // Hem yeni tam hassasiyetli kayıtları (örn. 1.25 kg) hem de eski 1 ondalıklı lbs kayıtlarını
-        // (örn. 44.1 lbs -> 20 kg) tam değerinde gösterir.
         function formatCleanNumber(num, isKg = false) {
             const val = parseFloat(num) || 0;
             if (isKg) {
@@ -445,7 +464,6 @@
                 : 'lbs';
         }
 
-        // Her egzersizin kendi kalıcı görüntüleme birimi (yoksa genel birimi devralır)
         function getExerciseDisplayUnit(exercise) {
             if (exercise && (exercise.displayUnit === 'lbs' || exercise.displayUnit === 'kg')) {
                 return exercise.displayUnit;
@@ -466,7 +484,6 @@
             return `${formatWeightValue(lbsVal, targetUnit)} ${targetUnit}`;
         }
 
-        // Tahmini 1RM Hesaplama Formülü (Tam hassasiyetli LBS üzerinden): Ağırlık * (1 + 0.0333 * Tekrar)
         function calculate1RM(weightLbs, reps) {
             const w = parseFloat(weightLbs) || 0;
             const r = parseInt(reps, 10) || 0;
@@ -492,7 +509,6 @@
                 ? rawInput.displayUnit
                 : 'lbs';
 
-            // Mevcut veriyi kaybetmeden ve gelecekteki alanları koruyarak normalize et
             const normalizedProfiles = rawInput.profiles.map((prof, pIdx) => {
                 const rawTabs = Array.isArray(prof.tabs) ? prof.tabs : [];
                 const normalizedTabs = rawTabs.map((tab, tIdx) => {
@@ -512,11 +528,11 @@
                                 timestamp: rec.timestamp || nowIso,
                                 weight: w,
                                 reps: r,
-                                estimated1RM: est
+                                estimated1RM: est,
+                                note: typeof rec.note === 'string' ? rec.note.trim() : ''
                             };
                         });
 
-                        // Egzersizin kendi birimi yoksa global birimi ata ve kalıcı hale getir
                         const exDisplayUnit = (ex.displayUnit === 'kg' || ex.displayUnit === 'lbs')
                             ? ex.displayUnit
                             : globalUnit;
@@ -568,7 +584,6 @@
             };
         }
 
-        // İlk açılış için varsayılan örnek veri ağacı (Tüm kayıtlar LBS cinsindendir)
         function getDefaultData() {
             const now = Date.now();
             const dayMs = 86400000;
@@ -602,9 +617,9 @@
                                         createdAt: nowIso,
                                         updatedAt: nowIso,
                                         records: [
-                                            { id: 'r1', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 200, reps: 8, estimated1RM: calculate1RM(200, 8) },
-                                            { id: 'r2', timestamp: new Date(now - 7 * dayMs).toISOString(), weight: 210, reps: 8, estimated1RM: calculate1RM(210, 8) },
-                                            { id: 'r3', timestamp: new Date(now - 2 * dayMs).toISOString(), weight: 225, reps: 8, estimated1RM: calculate1RM(225, 8) }
+                                            { id: 'r1', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 200, reps: 8, estimated1RM: calculate1RM(200, 8), note: '' },
+                                            { id: 'r2', timestamp: new Date(now - 7 * dayMs).toISOString(), weight: 210, reps: 8, estimated1RM: calculate1RM(210, 8), note: 'Son tekrar yardımlı' },
+                                            { id: 'r3', timestamp: new Date(now - 2 * dayMs).toISOString(), weight: 225, reps: 8, estimated1RM: calculate1RM(225, 8), note: '' }
                                         ]
                                     },
                                     {
@@ -615,8 +630,8 @@
                                         createdAt: nowIso,
                                         updatedAt: nowIso,
                                         records: [
-                                            { id: 'r4', timestamp: new Date(now - 10 * dayMs).toISOString(), weight: 35, reps: 10, estimated1RM: calculate1RM(35, 10) },
-                                            { id: 'r5', timestamp: new Date(now - 3 * dayMs).toISOString(), weight: 45, reps: 12, estimated1RM: calculate1RM(45, 12) }
+                                            { id: 'r4', timestamp: new Date(now - 10 * dayMs).toISOString(), weight: 35, reps: 10, estimated1RM: calculate1RM(35, 10), note: '' },
+                                            { id: 'r5', timestamp: new Date(now - 3 * dayMs).toISOString(), weight: 45, reps: 12, estimated1RM: calculate1RM(45, 12), note: '' }
                                         ]
                                     },
                                     {
@@ -627,10 +642,10 @@
                                         createdAt: nowIso,
                                         updatedAt: nowIso,
                                         records: [
-                                            { id: 'r6', timestamp: new Date(now - 21 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) },
-                                            { id: 'r7', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) },
-                                            { id: 'r8', timestamp: new Date(now - 7 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) },
-                                            { id: 'r9', timestamp: new Date(now - 1 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) }
+                                            { id: 'r6', timestamp: new Date(now - 21 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15), note: '' },
+                                            { id: 'r7', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15), note: '' },
+                                            { id: 'r8', timestamp: new Date(now - 7 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15), note: '' },
+                                            { id: 'r9', timestamp: new Date(now - 1 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15), note: '' }
                                         ]
                                     }
                                 ]
@@ -670,12 +685,10 @@
             };
         }
 
-        // LocalStorage'dan veriyi yükle (Eski sürümler dahil tarar ve güvenle yükseltir)
         function loadState() {
             try {
                 let raw = localStorage.getItem(STORAGE_KEY);
 
-                // Birincil anahtar boşsa eski sürüm anahtarlarını kontrol et
                 if (!raw) {
                     for (const legacyKey of LEGACY_STORAGE_KEYS) {
                         const legacyData = localStorage.getItem(legacyKey);
@@ -695,7 +708,6 @@
                 const parsed = JSON.parse(raw);
                 const oldVersion = parsed.schemaVersion || 1;
 
-                // Şema yükseltmesi yapılacaksa önce otomatik güvenlik yedeği al
                 if (oldVersion < CURRENT_SCHEMA_VERSION) {
                     try {
                         localStorage.setItem(BACKUP_STORAGE_KEY, raw);
@@ -712,7 +724,6 @@
             }
         }
 
-        // LocalStorage'a kaydet
         function saveState() {
             try {
                 if (appState) {
@@ -748,7 +759,6 @@
             return tab;
         }
 
-        // Ardışık aynı ağırlık/tekrar serisini (Streak) hesapla
         function calculateStreak(records) {
             if (!records || records.length === 0) return 0;
             const latest = records[records.length - 1];
@@ -764,7 +774,6 @@
             return streak;
         }
 
-        // Tarih formatlama
         function formatDateShort(isoString) {
             const date = new Date(isoString);
             return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
@@ -792,7 +801,6 @@
             btn.textContent = unit.toUpperCase();
         }
 
-        // Sağ üstteki GENEL LBS/KG dönüştürücü (tüm hareketleri senkronize günceller)
         function toggleDisplayUnit() {
             const newUnit = getDisplayUnit() === 'lbs' ? 'kg' : 'lbs';
             appState.displayUnit = newUnit;
@@ -816,7 +824,6 @@
             showToast(`Tüm hareketler: ${newUnit.toUpperCase()}`);
         }
 
-        // Tek bir egzersiz için KALICI ve BAĞIMSIZ LBS/KG görüntüleme geçişi
         function toggleExerciseUnit(exerciseId) {
             const tab = getActiveTab();
             if (!tab) return;
@@ -967,7 +974,6 @@
             });
         }
 
-        // XSS koruması
         function escapeHTML(str) {
             return String(str ?? '').replace(/[&<>'"]/g, tag => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -992,7 +998,8 @@
                 timestamp: nowIso,
                 weight: latest.weight,
                 reps: latest.reps,
-                estimated1RM: calculate1RM(latest.weight, latest.reps)
+                estimated1RM: calculate1RM(latest.weight, latest.reps),
+                note: ''
             };
 
             ex.records.push(newRecord);
@@ -1012,8 +1019,8 @@
 
             document.getElementById('quickEditTitle').textContent = ex.name;
             document.getElementById('editRepsInput').value = latest.reps;
+            document.getElementById('editNoteInput').value = '';
 
-            // Egzersizin kayıtlı kalıcı birimini ve tam hassasiyetli lbs değerini yükle
             quickInputUnit = getExerciseDisplayUnit(ex);
             quickExactLbs = parseFloat(latest.weight) || 0;
             document.getElementById('editWeightInput').value = quickInputUnit === 'kg'
@@ -1036,7 +1043,6 @@
             if (quickInputUnit === unit) return;
             const inputEl = document.getElementById('editWeightInput');
             quickInputUnit = unit;
-            // Kayıpsız dönüşüm: tam hassasiyetli quickExactLbs üzerinden çevir
             inputEl.value = unit === 'kg'
                 ? formatCleanNumber(lbsToKgExact(quickExactLbs), true)
                 : formatCleanNumber(quickExactLbs, false);
@@ -1089,6 +1095,7 @@
             if (!ex) return;
 
             const reps = parseInt(document.getElementById('editRepsInput').value, 10) || 1;
+            const note = (document.getElementById('editNoteInput').value || '').trim();
             const weightLbs = quickExactLbs;
             const nowIso = new Date().toISOString();
 
@@ -1097,7 +1104,8 @@
                 timestamp: nowIso,
                 weight: weightLbs,
                 reps: reps,
-                estimated1RM: calculate1RM(weightLbs, reps)
+                estimated1RM: calculate1RM(weightLbs, reps),
+                note: note
             };
 
             ex.records.push(newRecord);
@@ -1166,8 +1174,8 @@
                         borderColor: '#10b981',
                         backgroundColor: gradient,
                         borderWidth: 3,
-                        pointBackgroundColor: '#09090b',
-                        pointBorderColor: '#10b981',
+                        pointBackgroundColor: records.map(r => (r.note && r.note.trim()) ? '#fbbf24' : '#09090b'),
+                        pointBorderColor: records.map(r => (r.note && r.note.trim()) ? '#fbbf24' : '#10b981'),
                         pointBorderWidth: 2.5,
                         pointRadius: 4.5,
                         pointHoverRadius: 6,
@@ -1191,10 +1199,14 @@
                             callbacks: {
                                 label: function(context) {
                                     const rec = records[context.dataIndex];
-                                    return [
+                                    const lines = [
                                         `Tahmini 1RM: ${formatWeightWithUnit(rec.estimated1RM, unit)}`,
                                         `Set: ${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps} tekrar`
                                     ];
+                                    if (rec.note && rec.note.trim()) {
+                                        lines.push(`Not: ${rec.note.trim()}`);
+                                    }
+                                    return lines;
                                 }
                             }
                         }
@@ -1229,20 +1241,34 @@
             const reversed = [...exercise.records].reverse();
             reversed.forEach((rec) => {
                 const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-zinc-950/90 border border-zinc-800/80 rounded-xl px-3.5 py-2.5 text-xs';
+                item.className = 'flex flex-col bg-zinc-950/90 border border-zinc-800/80 rounded-xl px-3.5 py-2.5 text-xs';
+
+                const hasNote = rec.note && rec.note.trim().length > 0;
+                const noteBlock = hasNote
+                    ? `<div class="mt-2 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300/95 text-[11px] leading-snug break-words flex items-start gap-1.5">
+                           <svg class="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                           </svg>
+                           <span>${escapeHTML(rec.note.trim())}</span>
+                       </div>`
+                    : '';
+
                 item.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="font-bold text-zinc-200 text-sm">${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps} rep</span>
-                        <span class="text-zinc-500 text-[11px] mt-0.5">${formatDateFull(rec.timestamp)}</span>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex flex-col min-w-0">
+                            <span class="font-bold text-zinc-200 text-sm">${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps} rep</span>
+                            <span class="text-zinc-500 text-[11px] mt-0.5">${formatDateFull(rec.timestamp)}</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 shrink-0">
+                            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold">
+                                1RM: ${formatWeightWithUnit(rec.estimated1RM, unit)}
+                            </span>
+                            <button onclick="deleteSingleRecord('${exercise.id}', '${rec.id}')" title="Bu kaydı sil" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold">
-                            1RM: ${formatWeightWithUnit(rec.estimated1RM, unit)}
-                        </span>
-                        <button onclick="deleteSingleRecord('${exercise.id}', '${rec.id}')" title="Bu kaydı sil" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
+                    ${noteBlock}
                 `;
                 container.appendChild(item);
             });
@@ -1410,6 +1436,7 @@
 
         function openAddExerciseModal() {
             document.getElementById('newExName').value = '';
+            document.getElementById('newExNote').value = '';
             newExInputUnit = getDisplayUnit();
             const defaultVal = newExInputUnit === 'kg' ? 40 : 90;
             newExExactLbs = newExInputUnit === 'kg' ? kgToLbsExact(defaultVal) : defaultVal;
@@ -1463,6 +1490,7 @@
 
             const name = document.getElementById('newExName').value.trim();
             const reps = parseInt(document.getElementById('newExReps').value, 10) || 1;
+            const note = (document.getElementById('newExNote').value || '').trim();
             const weightLbs = newExExactLbs;
             const nowIso = new Date().toISOString();
 
@@ -1481,7 +1509,8 @@
                         timestamp: nowIso,
                         weight: weightLbs,
                         reps: reps,
-                        estimated1RM: calculate1RM(weightLbs, reps)
+                        estimated1RM: calculate1RM(weightLbs, reps),
+                        note: note
                     }
                 ]
             };
@@ -1539,7 +1568,6 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (parsed && Array.isArray(parsed.profiles)) {
-                        // Eski sürümden gelen yedekleri de otomatik yeni şemaya yükselt
                         appState = migrateAndNormalizeState(parsed);
                         saveState();
                         renderApp();
@@ -1566,6 +1594,546 @@
                     showToast('Uygulama başlangıç verilerine sıfırlandı.');
                 }
             );
+        }
+
+        // =========================================================================
+        // PDF PERFORMANS GRAFİKLERİ RAPORU OLUŞTURUCU
+        // =========================================================================
+        function drawRoundedRect(ctx, x, y, w, h, r) {
+            const radius = Math.min(r, w / 2, h / 2);
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.arcTo(x + w, y, x + w, y + h, radius);
+            ctx.arcTo(x + w, y + h, x, y + h, radius);
+            ctx.arcTo(x, y + h, x, y, radius);
+            ctx.arcTo(x, y, x + w, y, radius);
+            ctx.closePath();
+        }
+
+        function fitText(ctx, text, maxWidth) {
+            const str = String(text ?? '');
+            if (ctx.measureText(str).width <= maxWidth) return str;
+            let trimmed = str;
+            while (trimmed.length > 1 && ctx.measureText(trimmed + '...').width > maxWidth) {
+                trimmed = trimmed.slice(0, -1);
+            }
+            return trimmed + '...';
+        }
+
+        function createReportHeaderCanvas(stats) {
+            const W = 1400;
+            const H = 156;
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            drawRoundedRect(ctx, 0, 0, W, H, 22);
+            ctx.fillStyle = '#09090b';
+            ctx.fill();
+
+            drawRoundedRect(ctx, 28, 32, 12, 92, 6);
+            ctx.fillStyle = '#10b981';
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 34px Inter, sans-serif';
+            ctx.textBaseline = 'top';
+            ctx.fillText('PERFORMANS TAKİP — GELİŞİM & 1RM GRAFİK RAPORU', 58, 32);
+
+            const dateStr = new Date().toLocaleDateString('tr-TR', {
+                day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 20px Inter, sans-serif';
+            ctx.fillText(
+                `Rapor Tarihi: ${dateStr}   •   ${stats.profileCount} Program   •   ${stats.tabCount} Antrenman Günü   •   ${stats.exerciseCount} Hareket`,
+                58,
+                84
+            );
+
+            return canvas;
+        }
+
+        function createSectionBannerCanvas(profileName, tabName, exerciseCount) {
+            const W = 1400;
+            const H = 78;
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            drawRoundedRect(ctx, 0, 0, W, H, 14);
+            ctx.fillStyle = '#ecfdf5';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#a7f3d0';
+            ctx.stroke();
+
+            drawRoundedRect(ctx, 18, 17, 130, 44, 10);
+            ctx.fillStyle = '#059669';
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 18px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('PROGRAM', 83, 39);
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#064e3b';
+            ctx.font = '800 25px Inter, sans-serif';
+            const titleText = fitText(ctx, `${profileName}   ›   ${tabName}`, 980);
+            ctx.fillText(titleText, 166, 39);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#047857';
+            ctx.font = '700 20px Inter, sans-serif';
+            ctx.fillText(`${exerciseCount} Hareket`, W - 26, 39);
+
+            return canvas;
+        }
+
+        function createExerciseReportCardCanvas(profileName, tabName, exercise) {
+            const W = 1400;
+            const H = 740;
+            const canvas = document.createElement('canvas');
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            const unit = getExerciseDisplayUnit(exercise);
+            const records = Array.isArray(exercise.records) ? exercise.records : [];
+            const hasRecords = records.length > 0;
+            const firstRec = hasRecords ? records[0] : null;
+            const latestRec = hasRecords ? records[records.length - 1] : null;
+            const best1RMLbs = hasRecords ? Math.max(...records.map(r => r.estimated1RM)) : 0;
+            const streak = calculateStreak(records);
+
+            drawRoundedRect(ctx, 2, 2, W - 4, H - 4, 22);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#d4d4d8';
+            ctx.stroke();
+
+            drawRoundedRect(ctx, 2, 2, W - 4, 86, 22);
+            ctx.fillStyle = '#f4f4f5';
+            ctx.fill();
+            ctx.fillRect(2, 66, W - 4, 22);
+            ctx.beginPath();
+            ctx.moveTo(2, 88);
+            ctx.lineTo(W - 2, 88);
+            ctx.strokeStyle = '#e4e4e7';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#09090b';
+            ctx.font = '800 30px Inter, sans-serif';
+            ctx.fillText(fitText(ctx, exercise.name, 860), 30, 45);
+
+            const unitBadgeW = 86;
+            drawRoundedRect(ctx, W - 28 - unitBadgeW, 23, unitBadgeW, 42, 10);
+            ctx.fillStyle = '#059669';
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 18px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(unit.toUpperCase(), W - 28 - unitBadgeW / 2, 44);
+
+            const pathText = fitText(ctx, `${profileName} › ${tabName}`, 360);
+            ctx.font = '600 18px Inter, sans-serif';
+            const pathW = ctx.measureText(pathText).width + 32;
+            drawRoundedRect(ctx, W - 28 - unitBadgeW - 14 - pathW, 23, pathW, 42, 10);
+            ctx.fillStyle = '#e4e4e7';
+            ctx.fill();
+            ctx.fillStyle = '#3f3f46';
+            ctx.fillText(pathText, W - 28 - unitBadgeW - 14 - pathW / 2, 44);
+
+            let progressLabel = '—';
+            let progressColor = '#18181b';
+            if (records.length >= 2) {
+                const startVal = formatWeightValue(firstRec.estimated1RM, unit);
+                const endVal = formatWeightValue(latestRec.estimated1RM, unit);
+                const diff = formatCleanNumber(endVal - startVal, unit === 'kg');
+                const pct = startVal > 0 ? Math.round(((endVal - startVal) / startVal) * 1000) / 10 : 0;
+                const sign = diff > 0 ? '+' : '';
+                progressLabel = `${sign}${diff} ${unit} (${sign}${pct}%)`;
+                progressColor = diff > 0 ? '#059669' : (diff < 0 ? '#e11d48' : '#52525b');
+            } else if (records.length === 1) {
+                progressLabel = 'İlk Kayıt';
+                progressColor = '#52525b';
+            }
+
+            const kpis = [
+                {
+                    label: 'EN İYİ TAHMİNİ 1RM',
+                    value: hasRecords ? formatWeightWithUnit(best1RMLbs, unit) : '—',
+                    color: '#059669'
+                },
+                {
+                    label: 'SON PERFORMANS',
+                    value: hasRecords ? `${formatWeightWithUnit(latestRec.weight, unit)} × ${latestRec.reps} rep` : '—',
+                    color: '#09090b'
+                },
+                {
+                    label: '1RM GELİŞİM FARKI',
+                    value: progressLabel,
+                    color: progressColor
+                },
+                {
+                    label: 'TOPLAM SEANS / SERİ',
+                    value: `${records.length} seans  (${streak}x seri)`,
+                    color: '#4f46e5'
+                }
+            ];
+
+            const kpiY = 108;
+            const kpiH = 96;
+            const kpiGap = 18;
+            const kpiW = (W - 60 - kpiGap * 3) / 4;
+
+            kpis.forEach((kpi, idx) => {
+                const kx = 30 + idx * (kpiW + kpiGap);
+                drawRoundedRect(ctx, kx, kpiY, kpiW, kpiH, 14);
+                ctx.fillStyle = '#fafafa';
+                ctx.fill();
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = '#e4e4e7';
+                ctx.stroke();
+
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = '#71717a';
+                ctx.font = '700 15px Inter, sans-serif';
+                ctx.fillText(kpi.label, kx + 18, kpiY + 18);
+
+                ctx.fillStyle = kpi.color;
+                ctx.font = '800 24px Inter, sans-serif';
+                ctx.fillText(fitText(ctx, kpi.value, kpiW - 36), kx + 18, kpiY + 48);
+            });
+
+            // Sol Panel: Chart.js Performans Grafiği Kutusu
+            const chartBoxX = 30;
+            const chartBoxY = 224;
+            const chartBoxW = 870;
+            const chartBoxH = 486;
+
+            drawRoundedRect(ctx, chartBoxX, chartBoxY, chartBoxW, chartBoxH, 16);
+            ctx.fillStyle = '#fafafa';
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#e4e4e7';
+            ctx.stroke();
+
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#18181b';
+            ctx.font = '700 18px Inter, sans-serif';
+            ctx.fillText(`Tahmini 1RM Gelişim Eğrisi (${unit.toUpperCase()})`, chartBoxX + 20, chartBoxY + 16);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#71717a';
+            ctx.font = '500 15px Inter, sans-serif';
+            ctx.fillText('Formül: W × (1 + 0.0333 × R)', chartBoxX + chartBoxW - 20, chartBoxY + 18);
+
+            if (!hasRecords) {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#a1a1aa';
+                ctx.font = '600 22px Inter, sans-serif';
+                ctx.fillText('Bu hareket için henüz antrenman kaydı girilmemiş.', chartBoxX + chartBoxW / 2, chartBoxY + chartBoxH / 2 + 15);
+            } else {
+                const tempChartCanvas = document.createElement('canvas');
+                tempChartCanvas.width = chartBoxW - 32;
+                tempChartCanvas.height = chartBoxH - 64;
+                const tempChartCtx = tempChartCanvas.getContext('2d');
+
+                const labels = records.map((r, idx) => `${idx + 1}. (${formatDateShort(r.timestamp)})`);
+                const dataPoints = records.map(r => formatWeightValue(r.estimated1RM, unit));
+
+                const valueLabelsPlugin = {
+                    id: 'pdfPointLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx: c } = chart;
+                        const meta = chart.getDatasetMeta(0);
+                        if (!meta || !meta.data) return;
+                        c.save();
+                        c.font = '700 14px Inter, sans-serif';
+                        c.fillStyle = '#065f46';
+                        c.textAlign = 'center';
+                        c.textBaseline = 'bottom';
+                        const step = meta.data.length > 14 ? Math.ceil(meta.data.length / 10) : 1;
+                        meta.data.forEach((pt, i) => {
+                            if (i % step === 0 || i === meta.data.length - 1) {
+                                const val = dataPoints[i];
+                                c.fillText(`${val}`, pt.x, pt.y - 9);
+                            }
+                        });
+                        c.restore();
+                    }
+                };
+
+                const minVal = Math.min(...dataPoints);
+                const maxVal = Math.max(...dataPoints);
+                const pad = Math.max((maxVal - minVal) * 0.22, unit === 'kg' ? 2.5 : 5);
+
+                const offscreenChart = new Chart(tempChartCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: `Tahmini 1RM (${unit})`,
+                            data: dataPoints,
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(16, 185, 129, 0.14)',
+                            borderWidth: 3.5,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#059669',
+                            pointBorderWidth: 3,
+                            pointRadius: 5.5,
+                            fill: true,
+                            tension: 0.25
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        animation: false,
+                        layout: {
+                            padding: { top: 26, right: 18, left: 8, bottom: 4 }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: '#e4e4e7', drawBorder: false },
+                                ticks: {
+                                    color: '#52525b',
+                                    font: { family: 'Inter, sans-serif', size: 13, weight: '600' },
+                                    maxRotation: 30
+                                }
+                            },
+                            y: {
+                                suggestedMin: Math.max(0, Math.floor(minVal - pad)),
+                                suggestedMax: Math.ceil(maxVal + pad),
+                                grid: { color: '#e4e4e7', drawBorder: false },
+                                ticks: {
+                                    color: '#52525b',
+                                    font: { family: 'Inter, sans-serif', size: 13, weight: '600' },
+                                    callback: value => `${value} ${unit}`
+                                }
+                            }
+                        }
+                    },
+                    plugins: [valueLabelsPlugin]
+                });
+
+                ctx.drawImage(tempChartCanvas, chartBoxX + 16, chartBoxY + 48);
+                offscreenChart.destroy();
+            }
+
+            // Sağ Panel: Son Kayıtlar Döküm Tablosu (Notlar Dahil)
+            const histBoxX = 918;
+            const histBoxY = 224;
+            const histBoxW = W - 30 - histBoxX;
+            const histBoxH = 486;
+
+            drawRoundedRect(ctx, histBoxX, histBoxY, histBoxW, histBoxH, 16);
+            ctx.fillStyle = '#fafafa';
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#e4e4e7';
+            ctx.stroke();
+
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#18181b';
+            ctx.font = '700 18px Inter, sans-serif';
+            ctx.fillText('Son Kayıtlar', histBoxX + 20, histBoxY + 16);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#71717a';
+            ctx.font = '600 14px Inter, sans-serif';
+            ctx.fillText(`${records.length} kayıt`, histBoxX + histBoxW - 20, histBoxY + 19);
+
+            if (hasRecords) {
+                const recent = [...records].reverse();
+                let currentRowY = histBoxY + 52;
+                const maxBottomY = histBoxY + histBoxH - 12;
+
+                for (let idx = 0; idx < recent.length; idx++) {
+                    const rec = recent[idx];
+                    const hasNote = rec.note && rec.note.trim().length > 0;
+                    const rowH = hasNote ? 64 : 44;
+
+                    if (currentRowY + rowH > maxBottomY) break;
+
+                    drawRoundedRect(ctx, histBoxX + 14, currentRowY, histBoxW - 28, rowH, 10);
+                    ctx.fillStyle = idx === 0 ? '#ecfdf5' : '#ffffff';
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = idx === 0 ? '#a7f3d0' : '#e4e4e7';
+                    ctx.stroke();
+
+                    const topLineY = currentRowY + 21;
+
+                    // Tarih
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#71717a';
+                    ctx.font = '600 14px Inter, sans-serif';
+                    ctx.fillText(formatDateShort(rec.timestamp), histBoxX + 26, topLineY);
+
+                    // Ağırlık x Tekrar
+                    ctx.fillStyle = '#18181b';
+                    ctx.font = '700 16px Inter, sans-serif';
+                    ctx.fillText(
+                        fitText(ctx, `${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps}`, 195),
+                        histBoxX + 104,
+                        topLineY
+                    );
+
+                    // 1RM Değeri
+                    ctx.textAlign = 'right';
+                    ctx.fillStyle = '#059669';
+                    ctx.font = '800 15px Inter, sans-serif';
+                    ctx.fillText(`1RM: ${formatWeightValue(rec.estimated1RM, unit)}`, histBoxX + histBoxW - 26, topLineY);
+
+                    // Varsa Not Satırı
+                    if (hasNote) {
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#b45309';
+                        ctx.font = '600 13px Inter, sans-serif';
+                        ctx.fillText(
+                            fitText(ctx, `Not: ${rec.note.trim()}`, histBoxW - 52),
+                            histBoxX + 26,
+                            currentRowY + 46
+                        );
+                    }
+
+                    currentRowY += rowH + 7;
+                }
+            }
+
+            return canvas;
+        }
+
+        async function exportChartsPDF() {
+            if (isExportingPdf) return;
+
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast('PDF kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+                return;
+            }
+
+            let totalTabs = 0;
+            let totalExercises = 0;
+            (appState.profiles || []).forEach(p => {
+                const tabs = p.tabs || [];
+                totalTabs += tabs.length;
+                tabs.forEach(t => {
+                    totalExercises += (t.exercises || []).length;
+                });
+            });
+
+            if (totalExercises === 0) {
+                showToast('PDF raporu için en az bir egzersiz eklemelisiniz.', 'error');
+                return;
+            }
+
+            isExportingPdf = true;
+            const pdfBtn = document.getElementById('exportPdfBtn');
+            if (pdfBtn) pdfBtn.classList.add('opacity-50', 'pointer-events-none');
+            showToast(`PDF raporu hazırlanıyor (${totalExercises} hareket)...`);
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 60));
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageW = 210;
+                const pageH = 297;
+                const marginX = 10;
+                const usableW = pageW - marginX * 2;
+                const marginTop = 10;
+                const marginBottom = 13;
+                let cursorY = marginTop;
+
+                const headerCanvas = createReportHeaderCanvas({
+                    profileCount: appState.profiles.length,
+                    tabCount: totalTabs,
+                    exerciseCount: totalExercises
+                });
+                const headerH = usableW * (headerCanvas.height / headerCanvas.width);
+                doc.addImage(headerCanvas.toDataURL('image/png'), 'PNG', marginX, cursorY, usableW, headerH, undefined, 'FAST');
+                cursorY += headerH + 5;
+
+                const cardHeightMm = usableW * (740 / 1400);
+                const sectionHeightMm = usableW * (78 / 1400);
+
+                for (const prof of appState.profiles) {
+                    const tabs = prof.tabs || [];
+                    for (const tab of tabs) {
+                        const exercises = tab.exercises || [];
+                        if (exercises.length === 0) continue;
+
+                        if (cursorY + sectionHeightMm + 3 + cardHeightMm > pageH - marginBottom) {
+                            doc.addPage();
+                            cursorY = marginTop;
+                        }
+
+                        const sectionCanvas = createSectionBannerCanvas(prof.name, tab.name, exercises.length);
+                        doc.addImage(sectionCanvas.toDataURL('image/png'), 'PNG', marginX, cursorY, usableW, sectionHeightMm, undefined, 'FAST');
+                        cursorY += sectionHeightMm + 3.5;
+
+                        for (const ex of exercises) {
+                            if (cursorY + cardHeightMm > pageH - marginBottom) {
+                                doc.addPage();
+                                cursorY = marginTop;
+                            }
+
+                            const cardCanvas = createExerciseReportCardCanvas(prof.name, tab.name, ex);
+                            doc.addImage(cardCanvas.toDataURL('image/png'), 'PNG', marginX, cursorY, usableW, cardHeightMm, undefined, 'FAST');
+                            cursorY += cardHeightMm + 4.5;
+
+                            await new Promise(resolve => setTimeout(resolve, 10));
+                        }
+                    }
+                }
+
+                const totalPages = doc.getNumberOfPages();
+                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                    doc.setPage(pageNum);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8.5);
+                    doc.setTextColor(130, 130, 140);
+                    doc.text(
+                        `Performans Takip  •  Sayfa ${pageNum} / ${totalPages}`,
+                        pageW / 2,
+                        pageH - 5.5,
+                        { align: 'center' }
+                    );
+                }
+
+                const dateStr = new Date().toISOString().slice(0, 10);
+                doc.save(`performans-grafik-raporu-${dateStr}.pdf`);
+                showToast('PDF grafik raporu indirildi!');
+            } catch (err) {
+                console.error('PDF oluşturma hatası:', err);
+                showToast('PDF oluşturulurken bir hata oluştu!', 'error');
+            } finally {
+                isExportingPdf = false;
+                if (pdfBtn) pdfBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
         }
 
         // =========================================================================
@@ -1615,7 +2183,7 @@
                 toast.style.transform = 'translateY(8px)';
                 toast.style.transition = 'all 0.25s ease';
                 setTimeout(() => toast.remove(), 250);
-            }, 2400);
+            }, 2600);
         }
 
         // Modal dışına tıklayınca kapatma
