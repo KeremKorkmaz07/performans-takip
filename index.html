@@ -84,9 +84,9 @@
                 </div>
             </div>
 
-            <!-- Sağ Aksiyonlar: Birim Geçişi (LBS/KG), Yedekle (Export), Geri Yükle (Import), Sıfırla -->
+            <!-- Sağ Aksiyonlar: Genel Birim Geçişi (LBS/KG), Yedekle (Export), Geri Yükle (Import), Sıfırla -->
             <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <button id="unitToggleBtn" onclick="toggleDisplayUnit()" title="Görüntüleme Birimini Değiştir (LBS / KG)" class="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-extrabold tracking-wide text-emerald-400 transition active:scale-95">
+                <button id="unitToggleBtn" onclick="toggleDisplayUnit()" title="Tüm Hareketlerin Birimini Toplu Değiştir (LBS / KG)" class="px-2.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-extrabold tracking-wide text-emerald-400 transition active:scale-95">
                     LBS
                 </button>
                 <button onclick="exportData()" title="Verileri JSON Olarak İndir" class="p-2 sm:p-2.5 rounded-xl text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition active:scale-95">
@@ -210,7 +210,7 @@
                     </div>
                     <div class="flex items-center gap-2 w-full">
                         <button type="button" onclick="adjustInput('editWeightInput', -2.5)" class="shrink-0 w-14 h-12 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-sm font-bold text-rose-400 border border-zinc-700/80 flex items-center justify-center transition">-2.5</button>
-                        <input type="number" id="editWeightInput" step="0.1" min="0" required oninput="updateLive1RMPreview()" class="min-w-0 flex-1 w-full h-12 bg-zinc-950 border border-zinc-700 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-500">
+                        <input type="number" id="editWeightInput" step="any" min="0" required oninput="onQuickWeightInput()" class="min-w-0 flex-1 w-full h-12 bg-zinc-950 border border-zinc-700 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-500">
                         <button type="button" onclick="adjustInput('editWeightInput', 5)" class="shrink-0 w-14 h-12 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-base font-bold text-emerald-400 border border-zinc-700/80 flex items-center justify-center transition">+5</button>
                     </div>
                     <div id="quickConversionHint" class="text-[11px] text-zinc-400 mt-1.5 text-right font-medium">
@@ -246,12 +246,15 @@
     <div id="chartModal" class="fixed inset-0 z-40 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl animate-slide-up overflow-hidden">
             <!-- Modal Üst Kısım -->
-            <div class="p-5 border-b border-zinc-800 flex items-center justify-between shrink-0">
-                <div>
+            <div class="p-5 border-b border-zinc-800 flex items-center justify-between gap-2 shrink-0">
+                <div class="min-w-0">
                     <span class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Performans Analizi</span>
-                    <h3 id="chartModalTitle" class="text-xl font-bold text-white mt-0.5">Egzersiz Adı</h3>
+                    <h3 id="chartModalTitle" class="text-xl font-bold text-white mt-0.5 truncate">Egzersiz Adı</h3>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button id="chartUnitToggleBtn" onclick="toggleChartExerciseUnit()" title="Bu hareketin kalıcı birimini değiştir (LBS / KG)" class="px-2.5 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs font-extrabold text-emerald-400 transition active:scale-95 uppercase">
+                        LBS
+                    </button>
                     <button onclick="confirmDeleteExercise()" title="Egzersizi Sil" class="p-2.5 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
@@ -324,7 +327,7 @@
                                 <button type="button" id="newExUnitKgBtn" onclick="setNewExInputUnit('kg')" class="px-1.5 py-0.5 rounded text-[10px] font-bold transition">KG</button>
                             </div>
                         </div>
-                        <input type="number" id="newExWeight" step="0.1" min="0" value="90" required oninput="updateNewExConversionHint()" class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm font-semibold focus:outline-none focus:border-emerald-500">
+                        <input type="number" id="newExWeight" step="any" min="0" value="90" required oninput="onNewExWeightInput()" class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm font-semibold focus:outline-none focus:border-emerald-500">
                         <span id="newExConversionHint" class="block text-[10px] text-zinc-400 mt-1">Kayıt: 90 lbs</span>
                     </div>
                     <div>
@@ -391,80 +394,213 @@
 
     <script>
         // =========================================================================
-        // VERİ YAPISI VE VARSAYILAN ÖRNEK VERİLER (LOCALSTORAGE)
+        // İLERİ DÖNÜK VERİ ŞEMASI VE GERİYE DÖNÜK UYUMLULUK (MIGRATION)
         // =========================================================================
+        const CURRENT_SCHEMA_VERSION = 3;
         const STORAGE_KEY = 'performans_takip_v2_lbs';
+        const LEGACY_STORAGE_KEYS = ['performans_takip_v1', 'performans_takip'];
+        const BACKUP_STORAGE_KEY = 'performans_takip_auto_backup';
         const KG_TO_LBS = 2.2046226218;
+
         let appState = null;
         let currentEditingExerciseId = null;
         let currentChartExerciseId = null;
-        let tabModalMode = 'add'; // 'add' veya 'edit'
+        let tabModalMode = 'add';
         let chartInstance = null;
-        let quickInputUnit = 'lbs'; // Modal içi giriş birimi ('lbs' veya 'kg')
-        let newExInputUnit = 'lbs'; // Yeni egzersiz modalı giriş birimi ('lbs' veya 'kg')
 
-        // Birim Dönüşüm Yardımcıları (Tüm veriler veritabanında LBS olarak saklanır)
-        function kgToLbs(kg) {
-            return Math.round((parseFloat(kg) || 0) * KG_TO_LBS * 10) / 10;
+        // Kayıpsız dönüşüm için modal içi tam hassasiyetli durum değişkenleri
+        let quickInputUnit = 'lbs';
+        let quickExactLbs = 0;
+        let newExInputUnit = 'lbs';
+        let newExExactLbs = 90;
+
+        // =========================================================================
+        // BİRİM DÖNÜŞÜM YARDIMCILARI (KAYIPSIZ & HASSAS)
+        // =========================================================================
+        function kgToLbsExact(kg) {
+            return (parseFloat(kg) || 0) * KG_TO_LBS;
         }
 
-        function lbsToKg(lbs) {
-            return Math.round(((parseFloat(lbs) || 0) / KG_TO_LBS) * 10) / 10;
+        function lbsToKgExact(lbs) {
+            return (parseFloat(lbs) || 0) / KG_TO_LBS;
+        }
+
+        // Ekranda temiz gösterim:
+        // Hem yeni tam hassasiyetli kayıtları (örn. 1.25 kg) hem de eski 1 ondalıklı lbs kayıtlarını
+        // (örn. 44.1 lbs -> 20 kg) tam değerinde gösterir.
+        function formatCleanNumber(num, isKg = false) {
+            const val = parseFloat(num) || 0;
+            if (isKg) {
+                const nearestHalf = Math.round(val * 2) / 2;
+                if (Math.abs(val - nearestHalf) <= 0.025) {
+                    return nearestHalf;
+                }
+            }
+            return Math.round(val * 100) / 100;
         }
 
         function getDisplayUnit() {
-            return (appState && appState.displayUnit) ? appState.displayUnit : 'lbs';
+            return (appState && (appState.displayUnit === 'kg' || appState.displayUnit === 'lbs'))
+                ? appState.displayUnit
+                : 'lbs';
         }
 
-        function formatWeightValue(lbsVal) {
-            const unit = getDisplayUnit();
-            if (unit === 'kg') {
-                return lbsToKg(lbsVal);
+        // Her egzersizin kendi kalıcı görüntüleme birimi (yoksa genel birimi devralır)
+        function getExerciseDisplayUnit(exercise) {
+            if (exercise && (exercise.displayUnit === 'lbs' || exercise.displayUnit === 'kg')) {
+                return exercise.displayUnit;
             }
-            return Math.round((parseFloat(lbsVal) || 0) * 10) / 10;
+            return getDisplayUnit();
         }
 
-        function formatWeightWithUnit(lbsVal) {
-            const unit = getDisplayUnit();
-            return `${formatWeightValue(lbsVal)} ${unit}`;
+        function formatWeightValue(lbsVal, unit = null) {
+            const targetUnit = unit || getDisplayUnit();
+            if (targetUnit === 'kg') {
+                return formatCleanNumber(lbsToKgExact(lbsVal), true);
+            }
+            return formatCleanNumber(lbsVal, false);
         }
 
-        // Tahmini 1RM Hesaplama Formülü (LBS üzerinden): Ağırlık * (1 + 0.0333 * Tekrar)
+        function formatWeightWithUnit(lbsVal, unit = null) {
+            const targetUnit = unit || getDisplayUnit();
+            return `${formatWeightValue(lbsVal, targetUnit)} ${targetUnit}`;
+        }
+
+        // Tahmini 1RM Hesaplama Formülü (Tam hassasiyetli LBS üzerinden): Ağırlık * (1 + 0.0333 * Tekrar)
         function calculate1RM(weightLbs, reps) {
             const w = parseFloat(weightLbs) || 0;
             const r = parseInt(reps, 10) || 0;
             if (w === 0) return 0;
-            if (r === 1) return Math.round(w * 10) / 10;
-            const raw = w * (1 + 0.0333 * r);
-            return Math.round(raw * 10) / 10;
+            if (r === 1) return w;
+            return w * (1 + 0.0333 * r);
         }
 
-        // Benzersiz ID üretici
         function generateId(prefix = 'id') {
             return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        }
+
+        // =========================================================================
+        // İLERİ VE GERİYE DÖNÜK VERİ GÖÇÜ (SCHEMA MIGRATION ENGINE)
+        // =========================================================================
+        function migrateAndNormalizeState(rawInput) {
+            if (!rawInput || typeof rawInput !== 'object' || !Array.isArray(rawInput.profiles) || rawInput.profiles.length === 0) {
+                return getDefaultData();
+            }
+
+            const nowIso = new Date().toISOString();
+            const globalUnit = (rawInput.displayUnit === 'kg' || rawInput.displayUnit === 'lbs')
+                ? rawInput.displayUnit
+                : 'lbs';
+
+            // Mevcut veriyi kaybetmeden ve gelecekteki alanları koruyarak normalize et
+            const normalizedProfiles = rawInput.profiles.map((prof, pIdx) => {
+                const rawTabs = Array.isArray(prof.tabs) ? prof.tabs : [];
+                const normalizedTabs = rawTabs.map((tab, tIdx) => {
+                    const rawExercises = Array.isArray(tab.exercises) ? tab.exercises : [];
+                    const normalizedExercises = rawExercises.map((ex, eIdx) => {
+                        const rawRecords = Array.isArray(ex.records) ? ex.records : [];
+                        const normalizedRecords = rawRecords.map((rec, rIdx) => {
+                            const w = parseFloat(rec.weight) || 0;
+                            const r = parseInt(rec.reps, 10) || 1;
+                            const est = (typeof rec.estimated1RM === 'number' && !isNaN(rec.estimated1RM))
+                                ? rec.estimated1RM
+                                : calculate1RM(w, r);
+
+                            return {
+                                ...rec,
+                                id: rec.id || generateId(`rec_${rIdx}`),
+                                timestamp: rec.timestamp || nowIso,
+                                weight: w,
+                                reps: r,
+                                estimated1RM: est
+                            };
+                        });
+
+                        // Egzersizin kendi birimi yoksa global birimi ata ve kalıcı hale getir
+                        const exDisplayUnit = (ex.displayUnit === 'kg' || ex.displayUnit === 'lbs')
+                            ? ex.displayUnit
+                            : globalUnit;
+
+                        return {
+                            ...ex,
+                            id: ex.id || generateId(`ex_${eIdx}`),
+                            name: String(ex.name || 'İsimsiz Egzersiz'),
+                            baseUnit: 'lbs',
+                            displayUnit: exDisplayUnit,
+                            createdAt: ex.createdAt || (normalizedRecords[0]?.timestamp || nowIso),
+                            updatedAt: ex.updatedAt || nowIso,
+                            records: normalizedRecords
+                        };
+                    });
+
+                    return {
+                        ...tab,
+                        id: tab.id || generateId(`tab_${tIdx}`),
+                        name: String(tab.name || `Gün ${tIdx + 1}`),
+                        createdAt: tab.createdAt || nowIso,
+                        updatedAt: tab.updatedAt || nowIso,
+                        exercises: normalizedExercises
+                    };
+                });
+
+                return {
+                    ...prof,
+                    id: prof.id || generateId(`prof_${pIdx}`),
+                    name: String(prof.name || `Profil ${pIdx + 1}`),
+                    createdAt: prof.createdAt || nowIso,
+                    updatedAt: prof.updatedAt || nowIso,
+                    tabs: normalizedTabs
+                };
+            });
+
+            const validProfile = normalizedProfiles.find(p => p.id === rawInput.activeProfileId) || normalizedProfiles[0];
+            const validTab = validProfile.tabs.find(t => t.id === rawInput.activeTabId) || validProfile.tabs[0] || null;
+
+            return {
+                ...rawInput,
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                baseUnit: 'lbs',
+                displayUnit: globalUnit,
+                activeProfileId: validProfile.id,
+                activeTabId: validTab ? validTab.id : null,
+                updatedAt: nowIso,
+                profiles: normalizedProfiles
+            };
         }
 
         // İlk açılış için varsayılan örnek veri ağacı (Tüm kayıtlar LBS cinsindendir)
         function getDefaultData() {
             const now = Date.now();
             const dayMs = 86400000;
+            const nowIso = new Date(now).toISOString();
 
             return {
+                schemaVersion: CURRENT_SCHEMA_VERSION,
+                baseUnit: 'lbs',
                 displayUnit: 'lbs',
                 activeProfileId: 'prof_gym',
                 activeTabId: 'tab_push',
+                updatedAt: nowIso,
                 profiles: [
                     {
                         id: 'prof_gym',
                         name: 'Gym',
+                        createdAt: nowIso,
+                        updatedAt: nowIso,
                         tabs: [
                             {
                                 id: 'tab_push',
                                 name: 'Push',
+                                createdAt: nowIso,
+                                updatedAt: nowIso,
                                 exercises: [
                                     {
                                         id: 'ex_incline',
                                         name: 'Incline Bench Press',
+                                        baseUnit: 'lbs',
+                                        displayUnit: 'lbs',
+                                        createdAt: nowIso,
+                                        updatedAt: nowIso,
                                         records: [
                                             { id: 'r1', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 200, reps: 8, estimated1RM: calculate1RM(200, 8) },
                                             { id: 'r2', timestamp: new Date(now - 7 * dayMs).toISOString(), weight: 210, reps: 8, estimated1RM: calculate1RM(210, 8) },
@@ -474,6 +610,10 @@
                                     {
                                         id: 'ex_dips',
                                         name: 'Dips',
+                                        baseUnit: 'lbs',
+                                        displayUnit: 'lbs',
+                                        createdAt: nowIso,
+                                        updatedAt: nowIso,
                                         records: [
                                             { id: 'r4', timestamp: new Date(now - 10 * dayMs).toISOString(), weight: 35, reps: 10, estimated1RM: calculate1RM(35, 10) },
                                             { id: 'r5', timestamp: new Date(now - 3 * dayMs).toISOString(), weight: 45, reps: 12, estimated1RM: calculate1RM(45, 12) }
@@ -482,6 +622,10 @@
                                     {
                                         id: 'ex_lateral',
                                         name: 'Lateral Raise',
+                                        baseUnit: 'lbs',
+                                        displayUnit: 'lbs',
+                                        createdAt: nowIso,
+                                        updatedAt: nowIso,
                                         records: [
                                             { id: 'r6', timestamp: new Date(now - 21 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) },
                                             { id: 'r7', timestamp: new Date(now - 14 * dayMs).toISOString(), weight: 35, reps: 15, estimated1RM: calculate1RM(35, 15) },
@@ -494,11 +638,15 @@
                             {
                                 id: 'tab_pull',
                                 name: 'Pull',
+                                createdAt: nowIso,
+                                updatedAt: nowIso,
                                 exercises: []
                             },
                             {
                                 id: 'tab_legs',
                                 name: 'Legs',
+                                createdAt: nowIso,
+                                updatedAt: nowIso,
                                 exercises: []
                             }
                         ]
@@ -506,10 +654,14 @@
                     {
                         id: 'prof_cali',
                         name: 'Calisthenics',
+                        createdAt: nowIso,
+                        updatedAt: nowIso,
                         tabs: [
                             {
                                 id: 'tab_cali_1',
                                 name: 'Full Body',
+                                createdAt: nowIso,
+                                updatedAt: nowIso,
                                 exercises: []
                             }
                         ]
@@ -518,23 +670,42 @@
             };
         }
 
-        // LocalStorage'dan veriyi yükle
+        // LocalStorage'dan veriyi yükle (Eski sürümler dahil tarar ve güvenle yükseltir)
         function loadState() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY);
+                let raw = localStorage.getItem(STORAGE_KEY);
+
+                // Birincil anahtar boşsa eski sürüm anahtarlarını kontrol et
+                if (!raw) {
+                    for (const legacyKey of LEGACY_STORAGE_KEYS) {
+                        const legacyData = localStorage.getItem(legacyKey);
+                        if (legacyData) {
+                            raw = legacyData;
+                            break;
+                        }
+                    }
+                }
+
                 if (!raw) {
                     appState = getDefaultData();
                     saveState();
-                } else {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
-                        appState = parsed;
-                        if (!appState.displayUnit) appState.displayUnit = 'lbs';
-                    } else {
-                        appState = getDefaultData();
-                        saveState();
+                    return;
+                }
+
+                const parsed = JSON.parse(raw);
+                const oldVersion = parsed.schemaVersion || 1;
+
+                // Şema yükseltmesi yapılacaksa önce otomatik güvenlik yedeği al
+                if (oldVersion < CURRENT_SCHEMA_VERSION) {
+                    try {
+                        localStorage.setItem(BACKUP_STORAGE_KEY, raw);
+                    } catch (backupErr) {
+                        console.warn('Otomatik yedekleme atlandı:', backupErr);
                     }
                 }
+
+                appState = migrateAndNormalizeState(parsed);
+                saveState();
             } catch (e) {
                 console.error('Veri yükleme hatası:', e);
                 appState = getDefaultData();
@@ -544,6 +715,10 @@
         // LocalStorage'a kaydet
         function saveState() {
             try {
+                if (appState) {
+                    appState.schemaVersion = CURRENT_SCHEMA_VERSION;
+                    appState.updatedAt = new Date().toISOString();
+                }
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
             } catch (e) {
                 showToast('Veri kaydedilirken bir hata oluştu!', 'error');
@@ -579,7 +754,8 @@
             const latest = records[records.length - 1];
             let streak = 0;
             for (let i = records.length - 1; i >= 0; i--) {
-                if (records[i].weight === latest.weight && records[i].reps === latest.reps) {
+                const sameWeight = Math.abs(records[i].weight - latest.weight) < 0.0001;
+                if (sameWeight && records[i].reps === latest.reps) {
                     streak++;
                 } else {
                     break;
@@ -588,7 +764,7 @@
             return streak;
         }
 
-        // Tarih formatlama (Örn: 20 Kas)
+        // Tarih formatlama
         function formatDateShort(isoString) {
             const date = new Date(isoString);
             return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
@@ -616,15 +792,44 @@
             btn.textContent = unit.toUpperCase();
         }
 
+        // Sağ üstteki GENEL LBS/KG dönüştürücü (tüm hareketleri senkronize günceller)
         function toggleDisplayUnit() {
-            appState.displayUnit = getDisplayUnit() === 'lbs' ? 'kg' : 'lbs';
+            const newUnit = getDisplayUnit() === 'lbs' ? 'kg' : 'lbs';
+            appState.displayUnit = newUnit;
+
+            appState.profiles.forEach(prof => {
+                (prof.tabs || []).forEach(tab => {
+                    (tab.exercises || []).forEach(ex => {
+                        ex.displayUnit = newUnit;
+                        ex.updatedAt = new Date().toISOString();
+                    });
+                });
+            });
+
             saveState();
             renderApp();
+
             const chartModal = document.getElementById('chartModal');
             if (chartModal && !chartModal.classList.contains('hidden') && currentChartExerciseId) {
                 openChartModal(currentChartExerciseId);
             }
-            showToast(`Görünüm birimi: ${appState.displayUnit.toUpperCase()}`);
+            showToast(`Tüm hareketler: ${newUnit.toUpperCase()}`);
+        }
+
+        // Tek bir egzersiz için KALICI ve BAĞIMSIZ LBS/KG görüntüleme geçişi
+        function toggleExerciseUnit(exerciseId) {
+            const tab = getActiveTab();
+            if (!tab) return;
+            const ex = tab.exercises.find(e => e.id === exerciseId);
+            if (!ex) return;
+
+            const currentUnit = getExerciseDisplayUnit(ex);
+            const nextUnit = currentUnit === 'lbs' ? 'kg' : 'lbs';
+            ex.displayUnit = nextUnit;
+            ex.updatedAt = new Date().toISOString();
+            saveState();
+            renderExercises();
+            showToast(`${ex.name}: ${nextUnit.toUpperCase()} olarak ayarlandı`);
         }
 
         function renderProfiles() {
@@ -709,6 +914,7 @@
                 const hasRecords = ex.records && ex.records.length > 0;
                 const latest = hasRecords ? ex.records[ex.records.length - 1] : { weight: 0, reps: 0, estimated1RM: 0 };
                 const streak = calculateStreak(ex.records);
+                const exUnit = getExerciseDisplayUnit(ex);
 
                 const card = document.createElement('div');
                 card.className = 'bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 rounded-2xl p-3.5 sm:p-4 flex flex-col gap-3 shadow-sm transition group';
@@ -724,19 +930,22 @@
                         </span>
                     </button>
 
-                    <!-- Alt Satır: Ağırlık/Tekrar, Streak ve Same Butonu -->
-                    <div class="flex items-center justify-between gap-2 pt-2.5 border-t border-zinc-800/60">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <button onclick="openQuickEditModal('${ex.id}')" title="Ağırlık ve Tekrarı Güncelle" class="px-3.5 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/40 text-xs sm:text-sm font-bold text-white flex items-center gap-2 transition active:scale-95">
-                                <span class="text-emerald-400">${formatWeightWithUnit(latest.weight)}</span>
+                    <!-- Alt Satır: Ağırlık/Tekrar, Harekete Özel Kalıcı Birim Butonu, Streak ve Same Butonu -->
+                    <div class="flex items-center justify-between gap-1.5 pt-2.5 border-t border-zinc-800/60">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <button onclick="openQuickEditModal('${ex.id}')" title="Ağırlık ve Tekrarı Güncelle" class="px-3 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/40 text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 transition active:scale-95">
+                                <span class="text-emerald-400">${formatWeightWithUnit(latest.weight, exUnit)}</span>
                                 <span class="text-zinc-600">•</span>
                                 <span>${latest.reps} rep</span>
                             </button>
+                            <button onclick="toggleExerciseUnit('${ex.id}')" title="Bu hareketin kalıcı birimini değiştir (LBS / KG)" class="px-2 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/40 text-[11px] font-extrabold text-zinc-300 hover:text-emerald-400 transition active:scale-95 uppercase shrink-0">
+                                ${exUnit}
+                            </button>
                         </div>
 
-                        <div class="flex items-center gap-2 shrink-0">
+                        <div class="flex items-center gap-1.5 shrink-0">
                             <!-- Streak Rozeti -->
-                            <div title="Aynı ağırlık ve tekrarda ardışık seans sayısı" class="px-2.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-extrabold flex items-center gap-1 select-none">
+                            <div title="Aynı ağırlık ve tekrarda ardışık seans sayısı" class="px-2 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-extrabold flex items-center gap-1 select-none">
                                 <svg class="w-3.5 h-3.5 fill-amber-400/20" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
                                 </svg>
@@ -744,7 +953,7 @@
                             </div>
 
                             <!-- En Sağ: "Same" (Aynı) Butonu -->
-                            <button onclick="logSameSet('${ex.id}')" title="Aynı ağırlık ve tekrarı tekrar kaydet (Same)" class="h-10 px-3 sm:px-3.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-zinc-950 border border-emerald-500/30 hover:border-emerald-500 font-bold text-xs flex items-center gap-1.5 transition active:scale-90">
+                            <button onclick="logSameSet('${ex.id}')" title="Aynı ağırlık ve tekrarı tekrar kaydet (Same)" class="h-9 px-2.5 sm:px-3.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-zinc-950 border border-emerald-500/30 hover:border-emerald-500 font-bold text-xs flex items-center gap-1.5 transition active:scale-90">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                 </svg>
@@ -776,18 +985,21 @@
             if (!ex || ex.records.length === 0) return;
 
             const latest = ex.records[ex.records.length - 1];
+            const exUnit = getExerciseDisplayUnit(ex);
+            const nowIso = new Date().toISOString();
             const newRecord = {
                 id: generateId('rec'),
-                timestamp: new Date().toISOString(),
+                timestamp: nowIso,
                 weight: latest.weight,
                 reps: latest.reps,
                 estimated1RM: calculate1RM(latest.weight, latest.reps)
             };
 
             ex.records.push(newRecord);
+            ex.updatedAt = nowIso;
             saveState();
             renderExercises();
-            showToast(`Kaydedildi! (${formatWeightWithUnit(latest.weight)} × ${latest.reps} rep)`);
+            showToast(`Kaydedildi! (${formatWeightWithUnit(latest.weight, exUnit)} × ${latest.reps} rep)`);
         }
 
         function openQuickEditModal(exerciseId) {
@@ -801,24 +1013,33 @@
             document.getElementById('quickEditTitle').textContent = ex.name;
             document.getElementById('editRepsInput').value = latest.reps;
 
-            quickInputUnit = getDisplayUnit();
-            document.getElementById('editWeightInput').value = quickInputUnit === 'kg' ? lbsToKg(latest.weight) : latest.weight;
+            // Egzersizin kayıtlı kalıcı birimini ve tam hassasiyetli lbs değerini yükle
+            quickInputUnit = getExerciseDisplayUnit(ex);
+            quickExactLbs = parseFloat(latest.weight) || 0;
+            document.getElementById('editWeightInput').value = quickInputUnit === 'kg'
+                ? formatCleanNumber(lbsToKgExact(quickExactLbs), true)
+                : formatCleanNumber(quickExactLbs, false);
+
             updateQuickUnitButtonsUI();
             updateLive1RMPreview();
 
             openModal('quickEditModal');
         }
 
+        function onQuickWeightInput() {
+            const rawVal = parseFloat(document.getElementById('editWeightInput').value) || 0;
+            quickExactLbs = quickInputUnit === 'kg' ? kgToLbsExact(rawVal) : rawVal;
+            updateLive1RMPreview();
+        }
+
         function setQuickInputUnit(unit) {
             if (quickInputUnit === unit) return;
             const inputEl = document.getElementById('editWeightInput');
-            const currentVal = parseFloat(inputEl.value) || 0;
-            if (unit === 'kg') {
-                inputEl.value = lbsToKg(currentVal);
-            } else {
-                inputEl.value = kgToLbs(currentVal);
-            }
             quickInputUnit = unit;
+            // Kayıpsız dönüşüm: tam hassasiyetli quickExactLbs üzerinden çevir
+            inputEl.value = unit === 'kg'
+                ? formatCleanNumber(lbsToKgExact(quickExactLbs), true)
+                : formatCleanNumber(quickExactLbs, false);
             updateQuickUnitButtonsUI();
             updateLive1RMPreview();
         }
@@ -838,25 +1059,27 @@
         function adjustInput(inputId, delta) {
             const el = document.getElementById(inputId);
             let val = parseFloat(el.value) || 0;
-            val = Math.max(inputId === 'editRepsInput' ? 1 : 0, Math.round((val + delta) * 10) / 10);
+            val = Math.max(inputId === 'editRepsInput' ? 1 : 0, Math.round((val + delta) * 100) / 100);
             el.value = val;
-            updateLive1RMPreview();
+            if (inputId === 'editWeightInput') {
+                onQuickWeightInput();
+            } else {
+                updateLive1RMPreview();
+            }
         }
 
         function updateLive1RMPreview() {
-            const rawVal = parseFloat(document.getElementById('editWeightInput').value) || 0;
             const r = parseInt(document.getElementById('editRepsInput').value, 10) || 1;
-            const weightInLbs = quickInputUnit === 'kg' ? kgToLbs(rawVal) : Math.round(rawVal * 10) / 10;
-            const estLbs = calculate1RM(weightInLbs, r);
+            const estLbs = calculate1RM(quickExactLbs, r);
 
             const hintEl = document.getElementById('quickConversionHint');
             if (quickInputUnit === 'kg') {
-                hintEl.innerHTML = `Dönüşüm: <strong class="text-emerald-400">${weightInLbs} lbs</strong> olarak kaydedilecek`;
+                hintEl.innerHTML = `Dönüşüm: <strong class="text-emerald-400">${formatCleanNumber(quickExactLbs, false)} lbs</strong> olarak kaydedilecek`;
             } else {
-                hintEl.textContent = `Karşılığı: ≈ ${lbsToKg(weightInLbs)} kg (Kayıt: ${weightInLbs} lbs)`;
+                hintEl.textContent = `Karşılığı: ≈ ${formatCleanNumber(lbsToKgExact(quickExactLbs), true)} kg`;
             }
 
-            document.getElementById('live1RMValue').textContent = formatWeightWithUnit(estLbs);
+            document.getElementById('live1RMValue').textContent = formatWeightWithUnit(estLbs, quickInputUnit);
         }
 
         function saveQuickEdit(event) {
@@ -865,23 +1088,25 @@
             const ex = tab.exercises.find(e => e.id === currentEditingExerciseId);
             if (!ex) return;
 
-            const rawWeight = parseFloat(document.getElementById('editWeightInput').value) || 0;
             const reps = parseInt(document.getElementById('editRepsInput').value, 10) || 1;
-            const weightLbs = quickInputUnit === 'kg' ? kgToLbs(rawWeight) : Math.round(rawWeight * 10) / 10;
+            const weightLbs = quickExactLbs;
+            const nowIso = new Date().toISOString();
 
             const newRecord = {
                 id: generateId('rec'),
-                timestamp: new Date().toISOString(),
+                timestamp: nowIso,
                 weight: weightLbs,
                 reps: reps,
                 estimated1RM: calculate1RM(weightLbs, reps)
             };
 
             ex.records.push(newRecord);
+            ex.updatedAt = nowIso;
             saveState();
             closeModal('quickEditModal');
             renderExercises();
-            showToast(`Kaydedildi (${weightLbs} lbs)`);
+            const exUnit = getExerciseDisplayUnit(ex);
+            showToast(`Kaydedildi (${formatWeightWithUnit(weightLbs, exUnit)})`);
         }
 
         // =========================================================================
@@ -893,30 +1118,39 @@
             if (!ex) return;
 
             currentChartExerciseId = exerciseId;
+            const exUnit = getExerciseDisplayUnit(ex);
+
             document.getElementById('chartModalTitle').textContent = ex.name;
+            const chartUnitBtn = document.getElementById('chartUnitToggleBtn');
+            if (chartUnitBtn) chartUnitBtn.textContent = exUnit.toUpperCase();
 
             const records = ex.records || [];
             const best1RMLbs = records.length > 0 ? Math.max(...records.map(r => r.estimated1RM)) : 0;
             const latest = records.length > 0 ? records[records.length - 1] : { weight: 0, reps: 0 };
 
-            document.getElementById('statBest1RM').textContent = formatWeightWithUnit(best1RMLbs);
-            document.getElementById('statLatest').textContent = `${formatWeightWithUnit(latest.weight)} × ${latest.reps}`;
+            document.getElementById('statBest1RM').textContent = formatWeightWithUnit(best1RMLbs, exUnit);
+            document.getElementById('statLatest').textContent = `${formatWeightWithUnit(latest.weight, exUnit)} × ${latest.reps}`;
             document.getElementById('statCount').textContent = `${records.length} seans`;
 
-            renderHistoryList(ex);
+            renderHistoryList(ex, exUnit);
             openModal('chartModal');
-            renderProgressionChart(records);
+            renderProgressionChart(records, exUnit);
         }
 
-        function renderProgressionChart(records) {
+        function toggleChartExerciseUnit() {
+            if (!currentChartExerciseId) return;
+            toggleExerciseUnit(currentChartExerciseId);
+            openChartModal(currentChartExerciseId);
+        }
+
+        function renderProgressionChart(records, unit) {
             const ctx = document.getElementById('progressionChart').getContext('2d');
             if (chartInstance) {
                 chartInstance.destroy();
             }
 
-            const unit = getDisplayUnit();
             const labels = records.map((r, idx) => `${idx + 1}. (${formatDateShort(r.timestamp)})`);
-            const dataPoints = records.map(r => formatWeightValue(r.estimated1RM));
+            const dataPoints = records.map(r => formatWeightValue(r.estimated1RM, unit));
 
             const gradient = ctx.createLinearGradient(0, 0, 0, 200);
             gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
@@ -958,8 +1192,8 @@
                                 label: function(context) {
                                     const rec = records[context.dataIndex];
                                     return [
-                                        `Tahmini 1RM: ${formatWeightWithUnit(rec.estimated1RM)}`,
-                                        `Set: ${formatWeightWithUnit(rec.weight)} × ${rec.reps} tekrar`
+                                        `Tahmini 1RM: ${formatWeightWithUnit(rec.estimated1RM, unit)}`,
+                                        `Set: ${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps} tekrar`
                                     ];
                                 }
                             }
@@ -983,7 +1217,7 @@
             });
         }
 
-        function renderHistoryList(exercise) {
+        function renderHistoryList(exercise, unit) {
             const container = document.getElementById('historyList');
             container.innerHTML = '';
 
@@ -998,12 +1232,12 @@
                 item.className = 'flex items-center justify-between bg-zinc-950/90 border border-zinc-800/80 rounded-xl px-3.5 py-2.5 text-xs';
                 item.innerHTML = `
                     <div class="flex flex-col">
-                        <span class="font-bold text-zinc-200 text-sm">${formatWeightWithUnit(rec.weight)} × ${rec.reps} rep</span>
+                        <span class="font-bold text-zinc-200 text-sm">${formatWeightWithUnit(rec.weight, unit)} × ${rec.reps} rep</span>
                         <span class="text-zinc-500 text-[11px] mt-0.5">${formatDateFull(rec.timestamp)}</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold">
-                            1RM: ${formatWeightWithUnit(rec.estimated1RM)}
+                            1RM: ${formatWeightWithUnit(rec.estimated1RM, unit)}
                         </span>
                         <button onclick="deleteSingleRecord('${exercise.id}', '${rec.id}')" title="Bu kaydı sil" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1025,6 +1259,7 @@
             }
 
             ex.records = ex.records.filter(r => r.id !== recordId);
+            ex.updatedAt = new Date().toISOString();
             saveState();
             renderExercises();
             openChartModal(exerciseId);
@@ -1059,12 +1294,15 @@
             const name = document.getElementById('newProfileName').value.trim();
             if (!name) return;
 
+            const nowIso = new Date().toISOString();
             const newTabId = generateId('tab');
             const newProf = {
                 id: generateId('prof'),
                 name: name,
+                createdAt: nowIso,
+                updatedAt: nowIso,
                 tabs: [
-                    { id: newTabId, name: 'Gün 1', exercises: [] }
+                    { id: newTabId, name: 'Gün 1', createdAt: nowIso, updatedAt: nowIso, exercises: [] }
                 ]
             };
 
@@ -1121,20 +1359,25 @@
             const name = document.getElementById('tabNameInput').value.trim();
             if (!name) return;
 
+            const nowIso = new Date().toISOString();
             const prof = getActiveProfile();
             if (tabModalMode === 'add') {
                 const newTab = {
                     id: generateId('tab'),
                     name: name,
+                    createdAt: nowIso,
+                    updatedAt: nowIso,
                     exercises: []
                 };
                 prof.tabs.push(newTab);
+                prof.updatedAt = nowIso;
                 appState.activeTabId = newTab.id;
                 showToast(`"${name}" sekmesi eklendi.`);
             } else {
                 const tab = getActiveTab();
                 if (tab) {
                     tab.name = name;
+                    tab.updatedAt = nowIso;
                     showToast('Sekme adı güncellendi.');
                 }
             }
@@ -1168,19 +1411,28 @@
         function openAddExerciseModal() {
             document.getElementById('newExName').value = '';
             newExInputUnit = getDisplayUnit();
-            document.getElementById('newExWeight').value = newExInputUnit === 'kg' ? '40' : '90';
+            const defaultVal = newExInputUnit === 'kg' ? 40 : 90;
+            newExExactLbs = newExInputUnit === 'kg' ? kgToLbsExact(defaultVal) : defaultVal;
+            document.getElementById('newExWeight').value = defaultVal;
             document.getElementById('newExReps').value = '10';
             updateNewExUnitButtonsUI();
             updateNewExConversionHint();
             openModal('addExerciseModal');
         }
 
+        function onNewExWeightInput() {
+            const rawVal = parseFloat(document.getElementById('newExWeight').value) || 0;
+            newExExactLbs = newExInputUnit === 'kg' ? kgToLbsExact(rawVal) : rawVal;
+            updateNewExConversionHint();
+        }
+
         function setNewExInputUnit(unit) {
             if (newExInputUnit === unit) return;
             const inputEl = document.getElementById('newExWeight');
-            const currentVal = parseFloat(inputEl.value) || 0;
-            inputEl.value = unit === 'kg' ? lbsToKg(currentVal) : kgToLbs(currentVal);
             newExInputUnit = unit;
+            inputEl.value = unit === 'kg'
+                ? formatCleanNumber(lbsToKgExact(newExExactLbs), true)
+                : formatCleanNumber(newExExactLbs, false);
             updateNewExUnitButtonsUI();
             updateNewExConversionHint();
         }
@@ -1198,10 +1450,10 @@
         }
 
         function updateNewExConversionHint() {
-            const rawVal = parseFloat(document.getElementById('newExWeight').value) || 0;
-            const lbsVal = newExInputUnit === 'kg' ? kgToLbs(rawVal) : Math.round(rawVal * 10) / 10;
             const hintEl = document.getElementById('newExConversionHint');
-            hintEl.textContent = newExInputUnit === 'kg' ? `Kayıt: ${lbsVal} lbs` : `≈ ${lbsToKg(lbsVal)} kg`;
+            hintEl.textContent = newExInputUnit === 'kg'
+                ? `Kayıt: ${formatCleanNumber(newExExactLbs, false)} lbs`
+                : `≈ ${formatCleanNumber(lbsToKgExact(newExExactLbs), true)} kg`;
         }
 
         function handleAddExercise(event) {
@@ -1210,19 +1462,23 @@
             if (!tab) return;
 
             const name = document.getElementById('newExName').value.trim();
-            const rawWeight = parseFloat(document.getElementById('newExWeight').value) || 0;
             const reps = parseInt(document.getElementById('newExReps').value, 10) || 1;
-            const weightLbs = newExInputUnit === 'kg' ? kgToLbs(rawWeight) : Math.round(rawWeight * 10) / 10;
+            const weightLbs = newExExactLbs;
+            const nowIso = new Date().toISOString();
 
             if (!name) return;
 
             const newEx = {
                 id: generateId('ex'),
                 name: name,
+                baseUnit: 'lbs',
+                displayUnit: newExInputUnit,
+                createdAt: nowIso,
+                updatedAt: nowIso,
                 records: [
                     {
                         id: generateId('rec'),
-                        timestamp: new Date().toISOString(),
+                        timestamp: nowIso,
                         weight: weightLbs,
                         reps: reps,
                         estimated1RM: calculate1RM(weightLbs, reps)
@@ -1231,10 +1487,11 @@
             };
 
             tab.exercises.push(newEx);
+            tab.updatedAt = nowIso;
             saveState();
             closeModal('addExerciseModal');
             renderExercises();
-            showToast(`"${name}" (${weightLbs} lbs) eklendi!`);
+            showToast(`"${name}" (${formatWeightWithUnit(weightLbs, newExInputUnit)}) eklendi!`);
         }
 
         function confirmDeleteExercise() {
@@ -1282,7 +1539,8 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if (parsed && Array.isArray(parsed.profiles)) {
-                        appState = parsed;
+                        // Eski sürümden gelen yedekleri de otomatik yeni şemaya yükselt
+                        appState = migrateAndNormalizeState(parsed);
                         saveState();
                         renderApp();
                         showToast('Yedek başarıyla yüklendi!');
